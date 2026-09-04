@@ -1,0 +1,23 @@
+Railway deployment failed — Build Error
+
+Regenerate the pnpm lockfile so it matches the overrides configured in pnpm-workspace.yaml, then commit the updated pnpm-lock.yaml. The build failed because pnpm's frozen-lockfile install detected that the lockfile's recorded overrides configuration no longer matches pnpm-workspace.yaml, causing pnpm to abort with ERR_PNPM_LOCKFILE_CONFIG_MISMATCH before an image could be built.
+
+Repository: https://github.com/kidrocks1313-ui/VORTEX
+Branch: main · Commit: b7b4156 — Transfer complete project
+Deployment ID: 896cee9c-3c0e-48a5-b922-3adc299f1d8f
+Service ID: 55d36288-bbd7-4f19-bd30-0558ae48119b
+Environment ID: f5cb60f1-1f20-4f1b-9721-23408ee73cb4
+
+---
+
+## Problem
+Service VORTEX (REPO, builder RAILPACK) failed at the BUILD_IMAGE stage. The build log shows the 'pnpm install --frozen-lockfile --prefer-offline' step failing with: ' ERR_PNPM_LOCKFILE_CONFIG_MISMATCH  Cannot proceed with the frozen installation. The current "overrides" configuration doesn't match the value found in the lockfile\n\nUpdate your lockfile using "pnpm install --no-frozen-lockfile"', followed by 'Build Failed: build daemon returned an error < failed to solve: process "pnpm install --frozen-lockfile --prefer-offline" did not complete successfully: exit code: 1 >'. Deploy logs are empty, confirming the deployment never progressed past the build stage. The repo is a pnpm workspace; pnpm-workspace.yaml (repo root) defines a large 'overrides' block (pinning esbuild to 0.27.3, excluding many platform-specific native binaries for esbuild/lightningcss/@tailwindcss/oxide/rollup/@expo/ngrok-bin, plus a minimumReleaseAge security setting) and pnpm-lock.yaml (repo root) also carries its own recorded 'overrides' section from when it was last generated.
+
+## Diagnosis
+Railway's default pnpm install for this service runs with --frozen-lockfile, which requires the lockfile's recorded configuration (including the 'overrides' field) to exactly match what's declared in pnpm-workspace.yaml. Because this commit ('Transfer complete project') brought over the full project from another platform, the pnpm-workspace.yaml overrides configuration and the committed pnpm-lock.yaml have drifted out of sync, so pnpm refuses to install and errors out with ERR_PNPM_LOCKFILE_CONFIG_MISMATCH. This is a lockfile staleness problem rather than a Railway configuration issue; the previously diagnosed 'missing start command' issue from an earlier deployment is unrelated since the start command is already correctly configured and the failure now happens earlier, during dependency install.
+
+## Fix
+1. File: pnpm-lock.yaml (repo root)
+   - Current: the lockfile's 'overrides' section is stale relative to pnpm-workspace.yaml's overrides block, causing pnpm's frozen-lockfile check to fail.
+   - Replacement: run `pnpm install --no-frozen-lockfile` locally (with the current pnpm-workspace.yaml in place) to let pnpm regenerate pnpm-lock.yaml so its recorded overrides and dependency graph match the workspace config, then commit the regenerated pnpm-lock.yaml.
+   - Why: this directly resolves the ERR_PNPM_LOCKFILE_CONFIG_MISMATCH error, since Railway's build will only succeed with --frozen-lockfile once the committed lockfile exactly matches the workspace's overrides configuration.
