@@ -45,5 +45,13 @@ DISCORD_CLIENT_ID = "1524359451929481316"
 DISCORD_OWNER_IDS = "1392224478175690752,916746055268302848"
 
 [[ports]]
+localPort = 8080
+externalPort = 8080
+
+[[ports]]
+localPort = 8081
+externalPort = 8081
+
+[[ports]]
 localPort = 8082
 externalPort = 80

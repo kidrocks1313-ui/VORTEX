@@ -1,0 +1,1 @@
+- [Permission testing](permission-testing.md) — keep role checks deterministic with an in-memory store and isolated command database doubles.

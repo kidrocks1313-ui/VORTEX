@@ -1,5 +1,6 @@
 import { ChatInputCommandInteraction, PermissionFlagsBits } from "discord.js";
 import { db, developersTable } from "@workspace/db";
+import type { DeveloperRole } from "@workspace/db";
 import { eq } from "drizzle-orm";
 
 const OWNER_IDS = (process.env.DISCORD_OWNER_IDS ?? process.env.DISCORD_OWNER_ID ?? "")
@@ -11,12 +12,40 @@ export function isOwner(userId: string): boolean {
   return OWNER_IDS.includes(userId);
 }
 
+export interface PermissionStore {
+  getDeveloperRole(userId: string): Promise<DeveloperRole | null>;
+}
+
+const databasePermissionStore: PermissionStore = {
+  async getDeveloperRole(userId: string): Promise<DeveloperRole | null> {
+    const result = await db
+      .select()
+      .from(developersTable)
+      .where(eq(developersTable.userId, userId));
+    return result.length > 0 ? result[0]!.role : null;
+  },
+};
+
+let permissionStore: PermissionStore = databasePermissionStore;
+
 export async function getDeveloperRole(userId: string): Promise<string | null> {
-  const result = await db
-    .select()
-    .from(developersTable)
-    .where(eq(developersTable.userId, userId));
-  return result.length > 0 ? result[0]!.role : null;
+  return permissionStore.getDeveloperRole(userId);
+}
+
+/**
+ * Replaces the database-backed permission lookup for isolated tests.
+ * Returns a cleanup function so tests cannot leak permission state.
+ */
+export function setPermissionStoreForTests(store: PermissionStore): () => void {
+  const previousStore = permissionStore;
+  permissionStore = store;
+  return () => {
+    permissionStore = previousStore;
+  };
+}
+
+export function resetPermissionStoreForTests(): void {
+  permissionStore = databasePermissionStore;
 }
 
 /** Any developer rank or owner */

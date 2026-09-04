@@ -6,7 +6,15 @@ export const guessCommand = {
     .setDescription("Guess a number between 1 and 100!"),
 
   async execute(interaction: ChatInputCommandInteraction) {
-    if (!interaction.inGuild() || !interaction.channel) return;
+    if (!interaction.inGuild()) {
+      await interaction.reply({
+        content: "❌ The /guess command can only be played in a server text channel.",
+        ephemeral: true,
+      });
+      return;
+    }
+
+    if (!interaction.channel) return;
     const secret = Math.floor(Math.random() * 100) + 1;
     let attempts = 0;
     const MAX = 7;
