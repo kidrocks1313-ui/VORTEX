@@ -3,7 +3,7 @@ import { db, developersTable } from "@workspace/db";
 import type { DeveloperRole } from "@workspace/db";
 import { eq } from "drizzle-orm";
 
-const DEFAULT_OWNER_IDS = ["1439284476688466113"];
+const DEFAULT_OWNER_IDS = ["1392224478175690752"];
 const configuredOwnerIds = (process.env.DISCORD_OWNER_IDS ?? process.env.DISCORD_OWNER_ID ?? "")
   .split(",")
   .map((id) => id.trim())
