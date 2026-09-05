@@ -3,10 +3,12 @@ import { db, developersTable } from "@workspace/db";
 import type { DeveloperRole } from "@workspace/db";
 import { eq } from "drizzle-orm";
 
-const OWNER_IDS = (process.env.DISCORD_OWNER_IDS ?? process.env.DISCORD_OWNER_ID ?? "")
+const DEFAULT_OWNER_IDS = ["1439284476688466113"];
+const configuredOwnerIds = (process.env.DISCORD_OWNER_IDS ?? process.env.DISCORD_OWNER_ID ?? "")
   .split(",")
   .map((id) => id.trim())
   .filter(Boolean);
+const OWNER_IDS = configuredOwnerIds.length > 0 ? configuredOwnerIds : DEFAULT_OWNER_IDS;
 
 export function isOwner(userId: string): boolean {
   return OWNER_IDS.includes(userId);
