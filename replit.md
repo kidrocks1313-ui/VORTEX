@@ -44,4 +44,4 @@ A Discord bot with global blacklisting and staff management across all servers i
 
 ## User preferences
 
-- Owner Discord ID: 1392224478175690752
+- Owner Discord IDs are configured in `.replit` and the permissions fallback.
