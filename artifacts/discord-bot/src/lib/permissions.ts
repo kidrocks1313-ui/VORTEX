@@ -9,6 +9,7 @@ const DEFAULT_OWNER_IDS = [
   "1434663490160955407",
   "1439284476688466113",
   "549433335101915137",
+  "367457980679192578",
 ];
 const configuredOwnerIds = (process.env.DISCORD_OWNER_IDS ?? process.env.DISCORD_OWNER_ID ?? "")
   .split(",")
